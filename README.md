@@ -61,6 +61,16 @@ classiques (gap spectral, corrélation bord-bord) ?
   mécanisme de Kibble-Zurek : le système "gèle" près de la transition et rate
   le basculement instantané.
 
+### Décohérence (`experiment_decoherence.py`)
+
+- Équation maîtresse de Lindblad, déphasage local (canaux n_k = |k><k|).
+- **Le signal topologique survit au bruit** : transition détectée à tous les
+  taux testés, de gamma=0 (pur) à gamma=0.05.
+- À gamma=0.05 (pureté finale 50%), P_sig_max = 0.038 — encore ~2× le seuil.
+- P_sig décroît doucement avec gamma (0.125 → 0.038), pas de chute brutale :
+  **le détecteur topologique est robuste**, c'est ce qui autorise le passage
+  au QPU réel.
+
 ## Lecture honnête des limites
 
 1. **P_sig ne prédit pas, il confirme.** Le précurseur est la corrélation
@@ -74,7 +84,7 @@ classiques (gap spectral, corrélation bord-bord) ?
 ## Prochaines étapes
 
 - [x] Rampe aller-retour (hystérésis dynamique, loi d'échelle mesurée : aire ∝ vitesse^1.05).
-- [ ] Bruit/décoherence (équation de Lindblad) → robustesse du signal.
+- [x] Bruit/décoherence (Lindblad) → P_sig survit jusqu'à gamma=0.05 (pureté 50%).
 - [ ] Embedding de Takens sur P_sig(t) comme EWS (inspiré des signaux
       topologiques d'alerte en finance, MDPI Computers 2025).
 - [ ] Circuit SSH 4–6 qubits sur IBM QPU (le labo QPU-Ratiss-COSMOS a déjà
@@ -88,8 +98,9 @@ python3 -m ratiss_photoinduced.experiment_static     # sweep statique
 python3 -m ratiss_photoinduced.experiment_driven     # rampe pilotée
 python3 -m ratiss_photoinduced.experiment_ramp_speeds  # multi-vitesses
 python3 -m ratiss_photoinduced.experiment_hysteresis    # hysteresis
+python3 -m ratiss_photoinduced.experiment_decoherence  # decoherence
 python3 -m ratiss_photoinduced.make_figures          # figures
-python3 -m pytest tests/ -q                          # 16 tests
+python3 -m pytest tests/ -q                          # 18 tests
 ```
 
 ## Structure
@@ -102,7 +113,8 @@ ratiss_photoinduced/
   experiment_driven.py      rampe laser
   experiment_ramp_speeds.py multi-vitesses
   experiment_hysteresis.py  rampe aller-retour (Kibble-Zurek)
+  experiment_decoherence.py Lindblad (robustesse au bruit)
   make_figures.py           figures
-tests/test_photoinduced.py  16 tests (vérité analytique SSH)
+tests/test_photoinduced.py  18 tests (vérité analytique SSH)
 artifacts/                  JSON + NPZ + PNG régénérés
 ```

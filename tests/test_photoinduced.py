@@ -108,3 +108,19 @@ class TestHysteresis:
         slow = run(t_leg=200.0)["aire_hysteresis_psig"]
         fast = run(t_leg=10.0)["aire_hysteresis_psig"]
         assert fast > 10 * slow
+
+
+class TestDecoherence:
+    def test_pure_case_matches_no_noise(self):
+        # gamma=0 : purete conservee, transition detectee
+        from ratiss_photoinduced.experiment_decoherence import run_lindblad
+        r = run_lindblad(0.0)
+        assert r["purity_final"] > 0.99
+        assert r["transition_detectee"]
+
+    def test_signal_survives_moderate_decoherence(self):
+        # le signal topologique survit au dephasage modere
+        from ratiss_photoinduced.experiment_decoherence import run_lindblad
+        r = run_lindblad(0.005)
+        assert r["transition_detectee"]
+        assert r["psig_max"] > 0.02
