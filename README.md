@@ -1,0 +1,94 @@
+# RATISS — Transition de phase photo-induite détectée par signal topologique
+
+**Auteurs :** Jonathan Evina ([ORCID 0009-0000-4092-5313](https://orcid.org/0009-0000-4092-5313)) & JOHNKING0
+
+## Question de recherche
+
+Quand un laser pilote la réorganisation structurelle d'un cristal (ici la
+dimérisation d'une chaîne SSH), est-ce que le **signal topologique P_sig**
+(persistance Vietoris-Rips H1 des corrélations quantiques) détecte la
+transition de phase — et avec quel avance ou retard par rapport aux signaux
+classiques (gap spectral, corrélation bord-bord) ?
+
+## Méthode
+
+- **Modèle** : chaîne SSH (Su-Schrieffer-Heeger), N=16 sites, bords ouverts,
+  mi-remplissage. Transition topologique exacte à δ=0 (vérité analytique :
+  winding number, gap).
+- **"Laser"** : rampe temporelle δ(t) = 0.4 → −0.4 en temps T.
+- **État réel** : propagation temps réel RK4 de i dψ/dt = H(t) ψ.
+- **Signal topologique** : P_sig = plus longue vie H1 finie du complexe de
+  Vietoris-Rips construit sur les profils de corrélation |C_ij| de l'état
+  (moteur RATISS, GF(2), déterministe).
+- **Références** : P_sig adiabatique (état fondamental instantané), gap
+  spectral, corrélation bord-bord |C(0,N−1)|.
+
+## Résultats (artefacts régénérables, `python3 -m ratiss_photoinduced.*`)
+
+### Sweep statique (`experiment_static.py`, `fig_static_sweep.png`)
+
+- **P_sig est un détecteur binaire de la phase topologique** : strictement nul
+  pour tout δ > −0.06, non nul (0.02–0.12) dans la phase topologique. Validé
+  contre le winding number analytique.
+- **La corrélation bord-bord est un précurseur** : elle croît de façon
+  continue *avant* δ=0 (longueur de corrélation qui diverge), là où P_sig est
+  encore exactement nul.
+
+### Rampe pilotée (`experiment_driven.py`, `fig_driven_transition.png`)
+
+- Transition du Hamiltonien à t = 100 (δ=0).
+- **La corrélation bord-bord bascule à t = 96.4 — 3.6 unités de temps AVANT
+  la transition** : c'est le signal d'alerte précoce.
+- P_sig bascule à t ≈ 121 (seuil 0.02) : détecteur de confirmation, pas de
+  prédiction.
+- L'état réel suit l'adiabatique quasi parfaitement à cette vitesse de rampe
+  (P_sig final : 0.0814 réel vs 0.0814 adiabatique).
+
+### Multi-vitesses (`experiment_ramp_speeds.py`, `fig_ramp_speeds.png`)
+
+- Retard P_sig réel − adiabatique < 1 pas de temps pour T_ramp ∈ [50, 400] :
+  le suivi est robuste sur une décade de vitesses de balayage laser.
+
+## Lecture honnête des limites
+
+1. **P_sig ne prédit pas, il confirme.** Le précurseur est la corrélation
+   bord-bord (observable classique de taille finie), pas la persistance.
+2. Chaîne SSH = modèle jouet 1D soluble. L'extension à TaS₂ ou aux CDW 2D
+   demande un vrai Hamiltonien électron-phonon.
+3. N=16 : effets de taille finie présents (précurseur bord-bord en est un).
+4. Pas de dissipation ni de décoherence : circuit fermé, état pur.
+5. Le "laser" est une rampe de δ, pas un couplage Peierls réaliste A(t).
+
+## Prochaines étapes
+
+- [ ] Rampe aller-retour (hystérésis dynamique, Kibble-Zurek).
+- [ ] Bruit/décoherence (équation de Lindblad) → robustesse du signal.
+- [ ] Embedding de Takens sur P_sig(t) comme EWS (inspiré des signaux
+      topologiques d'alerte en finance, MDPI Computers 2025).
+- [ ] Circuit SSH 4–6 qubits sur IBM QPU (le labo QPU-Ratiss-COSMOS a déjà
+      validé des jobs ibm_marrakesh).
+
+## Reproduction
+
+```bash
+pip install numpy scipy matplotlib pytest
+python3 -m ratiss_photoinduced.experiment_static     # sweep statique
+python3 -m ratiss_photoinduced.experiment_driven     # rampe pilotée
+python3 -m ratiss_photoinduced.experiment_ramp_speeds  # multi-vitesses
+python3 -m ratiss_photoinduced.make_figures          # figures
+python3 -m pytest tests/ -q                          # 14 tests
+```
+
+## Structure
+
+```
+ratiss_photoinduced/
+  ssh_model.py              chaîne SSH + propagation RK4
+  topology.py               Vietoris-Rips GF(2) (moteur RATISS) + P_sig
+  experiment_static.py      sweep statique
+  experiment_driven.py      rampe laser
+  experiment_ramp_speeds.py multi-vitesses
+  make_figures.py           figures
+tests/test_photoinduced.py  14 tests (vérité analytique SSH)
+artifacts/                  JSON + NPZ + PNG régénérés
+```
