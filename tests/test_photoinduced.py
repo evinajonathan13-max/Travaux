@@ -124,3 +124,22 @@ class TestDecoherence:
         r = run_lindblad(0.005)
         assert r["transition_detectee"]
         assert r["psig_max"] > 0.02
+
+
+class TestQpuRobust:
+    def test_coupled_metric_positive_contrast(self):
+        # La métrique couplée donne un contraste positif même sous bruit
+        from ratiss_photoinduced.robust_metrics import evaluate_robustness
+        rob = evaluate_robustness(noise_level=0.1)
+        assert rob["contrast_positif"]
+        assert rob["contraste"] > 0
+
+    def test_coupled_metric_exact(self):
+        # Sur la matrice exacte, le score est plus élevé en phase topologique
+        from ratiss_photoinduced.robust_metrics import coupled_metric
+        from ratiss_photoinduced.ssh_model import correlation_matrix, ground_state_orbitals, ssh_hamiltonian
+        c_topo = correlation_matrix(ground_state_orbitals(ssh_hamiltonian(4, -0.5)))
+        c_triv = correlation_matrix(ground_state_orbitals(ssh_hamiltonian(4, 0.5)))
+        m_topo = coupled_metric(c_topo)
+        m_triv = coupled_metric(c_triv)
+        assert m_topo["score"] > m_triv["score"]
