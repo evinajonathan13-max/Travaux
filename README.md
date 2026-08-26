@@ -49,6 +49,18 @@ classiques (gap spectral, corrélation bord-bord) ?
 - Retard P_sig réel − adiabatique < 1 pas de temps pour T_ramp ∈ [50, 400] :
   le suivi est robuste sur une décade de vitesses de balayage laser.
 
+### Hystérésis dynamique (`experiment_hysteresis.py`, `fig_hysteresis.png`)
+
+- Rampe aller-retour (trivial → topologique → trivial).
+- **Rampe lente (T_leg=400) : hystérésis quasi nulle** — l'état revient à son
+  point de départ, cycle réversible (adiabatique).
+- **Rampe rapide : boucle d'hystérésis ouverte** — l'état retour ≠ l'état
+  aller au même δ, avec oscillations non-adiabatiques (Stückelberg).
+- **Loi d'échelle mesurée : aire d'hystérésis ∝ vitesse^1.05** (loi de
+  puissance, fit log-log sur T_leg ∈ [10, 400], aire ×63). Apparenté au
+  mécanisme de Kibble-Zurek : le système "gèle" près de la transition et rate
+  le basculement instantané.
+
 ## Lecture honnête des limites
 
 1. **P_sig ne prédit pas, il confirme.** Le précurseur est la corrélation
@@ -61,7 +73,7 @@ classiques (gap spectral, corrélation bord-bord) ?
 
 ## Prochaines étapes
 
-- [ ] Rampe aller-retour (hystérésis dynamique, Kibble-Zurek).
+- [x] Rampe aller-retour (hystérésis dynamique, loi d'échelle mesurée : aire ∝ vitesse^1.05).
 - [ ] Bruit/décoherence (équation de Lindblad) → robustesse du signal.
 - [ ] Embedding de Takens sur P_sig(t) comme EWS (inspiré des signaux
       topologiques d'alerte en finance, MDPI Computers 2025).
@@ -75,8 +87,9 @@ pip install numpy scipy matplotlib pytest
 python3 -m ratiss_photoinduced.experiment_static     # sweep statique
 python3 -m ratiss_photoinduced.experiment_driven     # rampe pilotée
 python3 -m ratiss_photoinduced.experiment_ramp_speeds  # multi-vitesses
+python3 -m ratiss_photoinduced.experiment_hysteresis    # hysteresis
 python3 -m ratiss_photoinduced.make_figures          # figures
-python3 -m pytest tests/ -q                          # 14 tests
+python3 -m pytest tests/ -q                          # 16 tests
 ```
 
 ## Structure
@@ -88,7 +101,8 @@ ratiss_photoinduced/
   experiment_static.py      sweep statique
   experiment_driven.py      rampe laser
   experiment_ramp_speeds.py multi-vitesses
+  experiment_hysteresis.py  rampe aller-retour (Kibble-Zurek)
   make_figures.py           figures
-tests/test_photoinduced.py  14 tests (vérité analytique SSH)
+tests/test_photoinduced.py  16 tests (vérité analytique SSH)
 artifacts/                  JSON + NPZ + PNG régénérés
 ```

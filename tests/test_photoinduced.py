@@ -93,3 +93,18 @@ class TestDrivenDynamics:
         psig_real = psig_from_correlation(correlation_matrix(traj[-1]))
         psig_ad = psig_from_correlation(correlation_matrix(ground_state_orbitals(ssh_hamiltonian(16, -0.4))))
         assert abs(psig_real - psig_ad) / psig_ad < 0.1
+
+
+class TestHysteresis:
+    def test_roundtrip_returns_to_start_slow_ramp(self):
+        # rampe lente aller-retour : l etat revient a son point de depart
+        from ratiss_photoinduced.experiment_hysteresis import run
+        r = run(t_leg=400.0)
+        assert r["ecart_final_psig"] < 0.01
+
+    def test_hysteresis_grows_with_speed(self):
+        # l aire d hysteresis croit quand la rampe accelere (Kibble-Zurek)
+        from ratiss_photoinduced.experiment_hysteresis import run
+        slow = run(t_leg=200.0)["aire_hysteresis_psig"]
+        fast = run(t_leg=10.0)["aire_hysteresis_psig"]
+        assert fast > 10 * slow

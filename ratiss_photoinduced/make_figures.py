@@ -84,8 +84,44 @@ def fig_ramps():
     plt.close(fig)
 
 
+
+def fig_hysteresis():
+    """Boucle d'hysteresis P_sig(delta) + aire vs vitesse de rampe."""
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5))
+
+    # Boucle (trajectoire rapide T_leg=30 sauvegardee)
+    z = np.load(OUT / "roundtrip_trajectory.npz")
+    d, psig, edge = z["deltas"], z["psig"], z["edge"]
+    t_leg = float(z["t_leg"])
+    n = len(d)
+    mid = n // 2
+    axes[0].plot(d[: mid + 1], psig[: mid + 1], "o-", ms=2, color="tab:blue",
+                 label="aller (trivial -> topo)")
+    axes[0].plot(d[mid:], psig[mid:], "s-", ms=2, color="tab:red",
+                 label="retour (topo -> trivial)")
+    axes[0].axvline(0, color="k", ls="--", alpha=0.4, label="delta=0")
+    axes[0].set_xlabel("delta (dimerisation)")
+    axes[0].set_ylabel("P_sig")
+    axes[0].set_title("Boucle d'hysteresis topologique (T_leg=%g)" % t_leg)
+    axes[0].legend(fontsize=8)
+
+    # Aire vs vitesse
+    sp = json.load(open(OUT / "hysteresis_speeds.json"))
+    tr = np.array(sp["t_leg"])
+    aire = np.array(sp["aire_psig"])
+    axes[1].loglog(1.0 / tr, aire, "o-", color="tab:purple", label="aire P_sig")
+    axes[1].set_xlabel("vitesse de rampe 1/T (t / hbar)")
+    axes[1].set_ylabel("aire d'hysteresis")
+    axes[1].set_title("Croissance de l'hysteresis avec la vitesse")
+    axes[1].legend(fontsize=8)
+
+    fig.tight_layout()
+    fig.savefig(OUT / "fig_hysteresis.png", dpi=150)
+    plt.close(fig)
+
 if __name__ == "__main__":
     fig_static()
     fig_driven()
     fig_ramps()
+    fig_hysteresis()
     print("figures ecrites dans", OUT)
