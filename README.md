@@ -81,14 +81,30 @@ classiques (gap spectral, corrélation bord-bord) ?
 4. Pas de dissipation ni de décoherence : circuit fermé, état pur.
 5. Le "laser" est une rampe de δ, pas un couplage Peierls réaliste A(t).
 
+## Résultats QPU IBM Marrakesh (hardware réel)
+
+**Job ID** : `da7ke8c6l22c73dnn2mg` + job corrélations
+**Backend** : ibm_marrakesh (156 qubits)
+**Circuits** : 9 (2 deltas × 4 paires × 2 bases + 2 Z)
+**Shots** : 4096 par circuit
+
+| Phase | P_sig QPU | P_sig exact | Écart |
+|---|---|---|---|
+| Topologique (δ=-0.5) | 0.0000 | 0.0665 | 0.0665 |
+| Triviale (δ=+0.5) | 0.0187 | 0.0012 | 0.0175 |
+
+**Conclusion honnête** : le bruit QPU **inverse le contraste topologique** à N=4.
+P_sig sur hardware réel est trop sensible au bruit pour cette taille. Solutions :
+plus de qubits, correction d'erreur, ou métrique topologique plus robuste.
+
 ## Prochaines étapes
 
 - [x] Rampe aller-retour (hystérésis dynamique, loi d'échelle mesurée : aire ∝ vitesse^1.05).
 - [x] Bruit/décoherence (Lindblad) → P_sig survit jusqu'à gamma=0.05 (pureté 50%).
+- [x] Circuit SSH sur IBM QPU (ibm_marrakesh) → bruit inverse le contraste à N=4.
 - [ ] Embedding de Takens sur P_sig(t) comme EWS (inspiré des signaux
       topologiques d'alerte en finance, MDPI Computers 2025).
-- [ ] Circuit SSH 4–6 qubits sur IBM QPU (le labo QPU-Ratiss-COSMOS a déjà
-      validé des jobs ibm_marrakesh).
+- [ ] Métrique topologique robuste au bruit (filtration par densité, pas par corrélation).
 
 ## Reproduction
 
@@ -99,6 +115,8 @@ python3 -m ratiss_photoinduced.experiment_driven     # rampe pilotée
 python3 -m ratiss_photoinduced.experiment_ramp_speeds  # multi-vitesses
 python3 -m ratiss_photoinduced.experiment_hysteresis    # hysteresis
 python3 -m ratiss_photoinduced.experiment_decoherence  # decoherence
+python3 -m ratiss_photoinduced.qpu_ssh               # circuit QPU
+python3 -m ratiss_photoinduced.qpu_correlations      # P_sig QPU
 python3 -m ratiss_photoinduced.make_figures          # figures
 python3 -m pytest tests/ -q                          # 18 tests
 ```
@@ -114,6 +132,8 @@ ratiss_photoinduced/
   experiment_ramp_speeds.py multi-vitesses
   experiment_hysteresis.py  rampe aller-retour (Kibble-Zurek)
   experiment_decoherence.py Lindblad (robustesse au bruit)
+  qpu_ssh.py              circuit SSH pour QPU
+  qpu_correlations.py     mesure correlations croisees QPU
   make_figures.py           figures
 tests/test_photoinduced.py  18 tests (vérité analytique SSH)
 artifacts/                  JSON + NPZ + PNG régénérés
