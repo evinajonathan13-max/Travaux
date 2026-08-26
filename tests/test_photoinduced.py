@@ -143,3 +143,16 @@ class TestQpuRobust:
         m_topo = coupled_metric(c_topo)
         m_triv = coupled_metric(c_triv)
         assert m_topo["score"] > m_triv["score"]
+
+
+class TestScale:
+    def test_scale_8_preserved_contrast(self):
+        # A 8 qubits, le contraste reste positif (meme s il diminue)
+        # Test sur simulateur (pas QPU pour eviter les credits)
+        from ratiss_photoinduced.robust_metrics import coupled_metric
+        from ratiss_photoinduced.ssh_model import correlation_matrix, ground_state_orbitals, ssh_hamiltonian
+        c_topo = correlation_matrix(ground_state_orbitals(ssh_hamiltonian(8, -0.5)))
+        c_triv = correlation_matrix(ground_state_orbitals(ssh_hamiltonian(8, 0.5)))
+        m_topo = coupled_metric(c_topo)
+        m_triv = coupled_metric(c_triv)
+        assert m_topo["score"] > m_triv["score"]
