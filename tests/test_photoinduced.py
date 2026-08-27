@@ -156,3 +156,31 @@ class TestScale:
         m_topo = coupled_metric(c_topo)
         m_triv = coupled_metric(c_triv)
         assert m_topo["score"] > m_triv["score"]
+
+
+class TestKTNWoven:
+    def test_woven_detected_over_aligned(self):
+        # P_sig du tissage > P_sig aligné (critère Phase 2)
+        from ratiss_photoinduced.ktn_woven import make_woven, make_aligned, subsample, distance_matrix
+        from ratiss_photoinduced.topology import rips_persistence
+        w = rips_persistence(distance_matrix(subsample(make_woven(), 80)))["psig"]
+        a = rips_persistence(distance_matrix(subsample(make_aligned(), 80)))["psig"]
+        assert w > 2 * a
+
+    def test_regeneration_invariance(self):
+        # régénération thermique : nouveau motif, même signature (drift < 5%)
+        from ratiss_photoinduced.ktn_woven import make_woven, thermal_regenerate, subsample, distance_matrix
+        from ratiss_photoinduced.topology import rips_persistence
+        p1 = rips_persistence(distance_matrix(subsample(make_woven(seed=42), 80)))["psig"]
+        p2 = rips_persistence(distance_matrix(subsample(thermal_regenerate(seed=1042), 80)))["psig"]
+        assert abs(p1 - p2) / p1 < 0.05
+
+    def test_woven_exact_correlation_structure(self):
+        # la référence exacte du tissé : C_ij = 1/3 hors-diagonale
+        from ratiss_photoinduced.ktn_phase5_qpu import exact_reference
+        import numpy as np
+        C = exact_reference("woven")
+        assert abs(C[0, 1] - 1.0 / 3.0) < 1e-12
+        assert abs(C[0, 0] - 0.5) < 1e-12
+        C2 = exact_reference("aligned")
+        assert C2[0, 0] == 1.0 and C2[2, 2] == 0.0
