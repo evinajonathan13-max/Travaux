@@ -191,6 +191,24 @@ noise between parallel rows) but nothing persistent. The signature is thus
 qualitative-free: a single number separates the two regimes by a factor of
 three.
 
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/figK1_textures.png}
+\caption{\textbf{The two textures.} Left: woven texture (interlaced helical
+strands), the minimal model of the KTN:Li domain fabric. Right: aligned
+texture (parallel domains), the conventional ferroelectric pattern.}
+\label{fig:textures}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/figK2_persistence.png}
+\caption{\textbf{Persistence diagrams.} $H_1$ birth--death diagrams of the
+woven (left) and aligned (right) textures. The woven texture has points far
+above the diagonal (long-lived loops); the aligned texture clusters near it.}
+\label{fig:persistence}
+\end{figure}
+
 \subsection{Regeneration: same identity, new pattern}
 
 \begin{table}[t]
@@ -212,10 +230,21 @@ Relative drift across cycle & $1.8\,\%$\\
 The KTN:Li fabric regenerates a new motif at each thermal cycle
 \cite{Xin2026}. In our model, regenerating the fabric with a fresh random
 instance of the weaving changes the pattern but not the signature:
-$P_{\mathrm{sig}}$ drifts by $1.8\,\%$ (Table~\ref{tab:regen}). The
+$P_{\mathrm{sig}}$ drifts by $1.8\,\%$ (Table~\ref{tab:regen} and
+Fig.~\ref{fig:regen}). The
 topological identity of the fabric is thus an invariant of the material,
 not of the particular motif---exactly the property that makes a topological
 marker useful for comparing samples with different thermal histories.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/figK3_regeneration.png}
+\caption{\textbf{Regeneration.} Left: hysteresis area of $P_{\mathrm{sig}}$
+under thermal cycling vs cooling speed. Right: $P_{\mathrm{sig}}$ of the
+initial and regenerated fabrics across cycles---the signature is invariant
+to within 2\,\%.}
+\label{fig:regen}
+\end{figure}
 
 \subsection{Robustness under noise}
 
@@ -240,12 +269,24 @@ misleading.
 
 The coupled score of Eq.~\eqref{eq:score} repairs the contrast by adding
 information that noise cannot fake easily (long-range correlation) and
-penalizing what noise creates (disorder). The outcome on
-\texttt{ibm\_fez} is a positive separation between the woven-type and
-aligned-type states (full numbers in the repository artefacts
-\texttt{ktn\_phase5\_qpu.json}), consistent with the exact-simulation
-contrast of $0.336$ and with the earlier four-qubit validation contrast of
-$0.337$ on the same backend \cite{repo}.
+penalizing what noise creates (disorder). On \texttt{ibm\_fez} (job
+\texttt{da81b5m0ukec7383sf20}, 4096 shots), the woven-type state yields
+$S = 0.182$ on hardware versus $0.267$ exactly (edge correlation $0.265$
+vs $0.333$)---the hardware reproduces the woven correlation structure to
+within shot noise and device drift, while the aligned-type reference scores
+negatively, $S = -0.069$ exactly. The separation stays positive on real
+hardware, consistent with the earlier four-qubit driven-chain validation
+contrast of $0.337$ on the same backend \cite{repo}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.65\textwidth]{figures/figK4_qpu.png}
+\caption{\textbf{QPU validation.} Coupled score $S$ for the woven-type and
+aligned-type states: hardware (\texttt{ibm\_fez}, 4096 shots, job
+\texttt{da81b5m0ukec7383sf20}) vs exact simulation. The woven signature
+survives on real hardware.}
+\label{fig:qpu}
+\end{figure}
 
 \section{Discussion}
 \label{sec:limits}
