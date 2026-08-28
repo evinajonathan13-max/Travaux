@@ -1,103 +1,111 @@
-# MÉMO KTN:LI COMPLET — PROJET RATISS × TISSAGE SPONTANÉ 3D
+# MÉMO KTN:Li COMPLET — PROJET RATISS × TISSAGE SPONTANÉ 3D
 
-## CONTEXTE
+> **Pour la prochaine session.** Ce fichier est la mémoire complète du projet
+> KTN:Li. Lis-le AVANT de toucher à quoi que ce soit.
 
-Jonathan Evina a demandé de lier son moteur RATISS à la découverte du **tissage spontané 3D dans KTN:Li** (ferroélectrique).
-Le papier réel existe, confirmé via PubMed API (PMC13370020) :
+## CONTEXTE — le papier réel (vérifié)
 
-> **"Spontaneous formation and optical manipulation of a woven domain fabric in a ferroelectric crystal"**
-> - Light: Science & Applications, 14 juillet 2026
-> - DOI: 10.1038/s41377-026-02374-7
-> - PMCID: PMC13370020 (libre accès, 51K caractères téléchargé)
-> - Auteurs : Xin F. (Nankai), Gelkop Y. (Hebrew), van der Veer E. (Groningen), DelRe E. (Sapienza Rome)
+Jonathan a lié le moteur RATISS à la découverte du **tissage spontané 3D dans
+KTN:Li** (ferroélectrique). Le papier existe et a été vérifié via l'API PubMed :
 
-### Confirmed facts from the paper (abstract + PMC fulltext) :
-- Tissage spontané 3D = "extended irregular topologically-protected defect"
-- Domaines entrelacés comparés aux défauts biologiques (ADN) et solitons (skyrmions)
-- Réécriture optique par laser visible (activation site-by-site)
-- Bruit thermique → activation cycles → régénération de motifs (phase 1)
-- Autoras comparable aux quasi-cristaux de Shechtman 1982
+> **"Spontaneous formation and optical manipulation of a woven domain fabric
+> in a ferroelectric crystal"**
+> - Xin F., Gelkop Y., van der Veer E., Noheda B., Falsi L., Zhang G., Bo F.,
+>   Agranat A.J., DelRe E. (Nankai / Sapienza Rome / Hebrew U / Groningen)
+> - *Light: Science & Applications* **15**, 315 (14 juillet 2026)
+> - DOI: 10.1038/s41377-026-02374-7 · PMCID: PMC13370020 (open access)
+> - Full text PMC téléchargé : "topologically-protected defect", "braided
+>   domain structure", domain walls chargés, manipulation optique
+>   site-par-site au laser visible, régénération à chaque cycle thermique,
+>   comparaison ADN/quasi-cristaux (Shechtman)
 
-## CE QUI A ÉTÉ FAIT — 2 PHASES COMPLÈTES LIVRÉES
+## CE QUI EST FAIT — LES 5 PHASES LIVRÉES
 
-### PHASE 1 : Acquisition données synthétiques KTN:Li (/workspace/project/ktn/)
-Création de nuages de points 3D simulant le tissage (900 points spirales entrelacées) vs aligné (domaines parallèles).
-Fichiers :
-- `woven_3d.npy` (900 pts spirales ADN-brins)
-- `aligned_3d.npy` (900 pts domaines parallèles)
-- `results_phase2.json` (P_sig computed)
-- `results_phase3.json` (laser simulation)
+### Phase 1 — Données synthétiques KTN:Li ✓
+- `ratiss_photoinduced/ktn_woven.py` : `make_woven()` (9 brins hélicoïdaux
+  entrelacés, 900 pts) vs `make_aligned()` (domaines parallèles),
+  `optical_unweave()` (perturbation laser 514 nm gaussienne),
+  `thermal_regenerate()` (nouveau motif à chaque seed)
 
-### PHASE 2 : Caractérisation topologique complète — SUCCÈS
-P_sig H1, cycles, robustness :
+### Phase 2 — Caractérisation topologique ✓ (SUCCÈS)
+- **P_sig(woven) = 0.677 vs P_sig(aligned) = 0.231 → ratio 2.9×**
+- Le tissage est détectable par persistance Vietoris-Rips GF(2) (H1)
+- 80 points sous-échantillonnés (limite de l'engine Rips sur triangles)
 
-| Structure | P_sig (max H1) | cycles H1 | Rapport |
-|---|---|---|---|
-| **woven (tissage)** | **0.677** | 12 cycles H1 | **2.93x** |
-| **aligned (classique)** | **0.231** | 29 cycles | 1x |
+### Phase 3 — Réécriture optique ✓ (résultat négatif informatif)
+- Perturbation laser gaussienne locale : P_sig quasi inchangé (1.00×)
+- **Le tissage est résilient à la perturbation locale** — cohérent avec la
+  protection topologique rapportée dans le papier
 
-**>> CRITÈRE DE SUCCÈS PHASE 2 ATTEINT** : P_sig(KTN) ≥ P_sig(classique), ratio 2.93x.
+### Phase 4 — Régénération thermique ✓
+- `ktn_phase4_hysteresis.py` : cycles thermiques sur le tissage
+- **Invariance de régénération : drift 1.8%** (P_sig 0.789 → 0.803)
+- Le motif change à chaque cycle, la signature topologique reste — analogue
+  direct du "nouveau motif à chaque refroidissement" du papier
+- Aire d'hystérésis mesurée vs vitesse (α≈0 ici car modèle d'interpolation
+  statique — limitation honnête documentée)
 
-Le tissage est détectable topologiquement par la persistance Vietoris-Rips GF(2).
+### Phase 5 — Validation QPU IBM ✓ (avec itérations)
+- `ktn_phase5_qpu.py` : état "woven" (superposition uniforme des 6 configs à
+  2 fermions, C_ij = 1/3) vs état "aligned" (|0011>)
+- **Itération 1 (bug)** : post-sélection sur toutes les bases biaisait XX/YY
+  (les rotations H changent le nombre de particules) → corrigée sur Z seul
+- **Itération 2 (bug)** : référence exacte woven C_ij = 1/6 → corrigée à 1/3
+- **Itération 3 (backend)** : ibm_fez saturé (573 jobs) → relance marrakesh
+- **Job fez `da81b5m0ukec7383sf20` DONE** : woven S=0.182 (exact 0.267),
+  edge=0.265 (exact 0.333) — la structure tissée survit au hardware
+- **Contraste QPU woven vs aligned : +0.260 positif**
+- Artefacts : `artifacts/ktn_phase5_qpu.json`, counts sauvegardés
 
-### PHASE 3 (départ) : Modélisation laser 514nm
-Simulation de la perturbation laser gaussienne locale sur le nuage tissé.
-Résultat : P_sig ~inchangé (1.00x) — la perturbation locale n'a pas démêlé le tissage (topologie résiliente).
-Implique : la résilience au bruit du KTN:Li (test open, falsifiable).
+### Phase 6 — Préprint ✓
+- `preprint/preprint_ktn.tex` compilé → `preprint_ktn.pdf` (8 pages)
+- 4 figures KTN : figK1 textures 3D, figK2 diagrammes persistance,
+  figK3 régénération, figK4 QPU hardware
+- Citation réelle Xin et al. 2026 + Shechtman 1984
+- Section limites honnêtes (textures synthétiques, proxy QPU, H1 seulement)
+- 0 référence cassée (vérifié par extraction texte)
 
-## RÉPÉRATIONS EXISTANTES (Travaux git, toute architecture publiée)
+## ÉTAT DES TESTS
+**24/24 verts** (`pytest tests/ -q`), dont 3 nouveaux tests KTN :
+`test_woven_detected_over_aligned`, `test_regeneration_invariance`,
+`test_woven_exact_correlation_structure`
 
-**LE SYSTÈME COMPLET :**
-1. Sweep statique SSH (P_sig = détecteur binaire) — proven, 21/21 tests
-2. Rampe laser pilotée (alerte précoce 3.6t) — proven
-3. Multi-vitesses (adiabaticité) — proven
-4. Hystérésis Kibble-Zurek : aire ∝ v^1.05 (loi d'échelle puissance)
-5. Décohérence Lindblad : P_sig survive γ=0.05 pureté 50%
-6. P_sig seul inversé par QPU (résultat négatif propre)
-7. Métrique couplée robuste : contraste positif QPU N=4 (0.337), N=8 (0.045)
-8. Préprint LaTeX 12 pages, 8 figures — QPU idem IS
+## ACCÈS IBM QUANTUM (procédure qui marche)
+1. Lire la clé : fichier `clef` dans le repo (format "ma cle ibm XXXX")
+2. Token IAM : POST https://iam.cloud.ibm.com/identity/token avec
+   grant_type=urn:ibm:params:oauth:grant-type:apikey
+3. CRN instance : GET
+   https://resource-controller.cloud.ibm.com/v2/resource_instances?type=service_instance
+   → `crn:v1:bluemix:public:quantum-computing:us-east:a/16793dc4...`
+4. `QiskitRuntimeService(channel="ibm_quantum_platform", token=..., instance=CRN)`
+5. **Ne PAS utiliser** `instance="open-instance"` (rejeté) — utiliser le CRN
+6. **Ne PAS utiliser** `backend.run()` (déprécié) — utiliser
+   `SamplerV2(mode=backend)` + `job.result()[i].data.meas.get_counts()`
+7. Backends : ibm_fez (souvent saturé, 573 jobs), ibm_marrakesh (20),
+   ibm_kingston (41) — vérifier `backend.status().pending_jobs` avant
 
-## CE QUI RESTE À FAIRE — FEUILLE DE ROUTE KTN:Li
+## TRAVAIL PRÉCÉDENT (inchangé, tout valide)
+Le pipeline SSH complet (sweep, rampe, hystérésis α=1.05, Lindblad, QPU
+marrakesh/fez) est documenté dans README.md et le préprint SSH
+(`preprint/preprint.pdf`, 12 pages). 21 tests de base + 3 KTN.
 
-### PHASE 1.1 → 4 : Acquisition vrais données KTN:Li
-Contacter les auteurs (DelRe / Noheda) pour donné brutes d'imagerie 3D,
-ou digitize figures PMC13370020 pour extraire coordonnées 3D des domaines.
+## CE QUI RESTE À FAIRE (prochaines sessions)
+1. **Données réelles KTN:Li** : contacter DelRe/Noheda pour les données
+   d'imagerie 3D (SHG microscopy) ou digitaliser les figures PMC13370020
+   → injecter dans le pipeline tel quel (Phase 1 remplace le synthétique)
+2. **Job aligned marrakesh** `da81r1k6l22c73do6msg` : encore QUEUED à la
+   fin de session — récupérer pour compléter le contraste woven/aligned sur
+   marrakesh (fez déjà fait)
+3. **H2 (cavités)** : étendre l'engine Rips aux tétraèdres pour capter les
+   volumes clos du tissage 3D (le vrai contenu 3D du tissage)
+4. **Soumission arXiv** : catégorie cond-mat.mtrl-sci ou quant-ph
+   (le PDF est prêt)
+5. **Mettre à jour MEMO_GLOBAL.md** du repo Ratiss-experimental-IA- avec le
+   lien vers ce projet
 
-### PHASE 4 : Hystérésis thermique / régénération cycles
-- Modéliser cycles thermiques comme rampes
-- Mesurer aire d'hystérésis de P_sig vs vitesse de refroidissement
-- Comparer exposant à celui du SSH (α=1.05)
-
-### PHASE 5 : Validation QPU du tissage 3D
-- Encoder une spin network 3D (analogie au tissage) en circuit Qiskit
-- Soumettre à ibm_fez / marrakesh (les deux mesures 156 qubits sont opérationnels)
-- Appliquer métrique couplée robuste sur hardware
-
-### PHASE 6 : Préprint
-- Titre : "Topological Quantification of Spontaneous 3D Woven Fabric in Ferroelectric Crystal"
-- 8 figures (papers, data, circuits)
-- Citations complètes au papier Nature, PubMed API, PMC : citer XKX + Shechtman
-- Positionner RATISS comme instrument de mesure manquant dans ce phénomène
-
-## POINTS DE VULGARISATION SCIENTIFIQUE TO WRITE
-
-Published information known:
-
-1. **Mathematica-Marova :** KTN:Li = the real worlds first woven domain fabric mechanism without metadata ext
-2. **Optique :** Psig here > P Sig class so you don't see Embellme
-3. **Bruyst :** P Sig survive 3 decoupling indexes per γ (test)
-4. **Timée :** Wavy on hushlades — iLS pas-l issues me heritages + ipShinly/
-5. **metaphors Implint :** Paths encore, ref: this is a new class of universalité — no further letter nothing tomorrow : in busy :
-
-## DANGERS
-
-**MÉTHODE RATISS patterns de l'image rats-core sur contributeur n'est pas une tare perturbabilité sur le mouvel aétophemy** KTN:Li:
-- Hais les closing time seidele dépotted comcutéin R1 mit sé mains ont is close (ravoyn)
-- **Publication :** maps pageZ dependable police Its programmée dans le de non-conforme de l'image.
-
-Ocà sur différentes — i LSMA-WolfSSCI à sa Waörap Sh **le mode amias fses yeah s' explore le chat caméras.
-
-## STATUT
-
-**2 phases complétées, 2 livrés** (acquisition + caractérisation)
-**KTN:Li PHASE 1-2 DONE. NEXT : PHASE 4-6 (données réelles, hystérésis, QPU)**
+## RÈGLES DE LA SESSION (conseil de Jonathan)
+- **Jamais figé, toujours itérer** : si un circuit casse au QPU, remplacer
+  les circuits auxiliaires et relancer. C'est comme ça qu'on est passé de
+  "P_sig inversé" à "contraste validé".
+- Ne jamais prétendre un résultat non mesuré — documenter les échecs.
+- Repo `Travaux` = privé (contient `clef`) — ne pas le rendre public.
